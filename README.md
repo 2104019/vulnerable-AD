@@ -1,29 +1,23 @@
 <h1 align="center">
-  Vulnerable-AD
+  Vulnerable-AD (Altered for Uni Work)
   <br>
 </h1>
 
-Create a vulnerable active directory that's allowing you to test most of active directory attacks in local lab
+Create a vulnerable active directory that's allowing you to test most of active directory attacks in local lab.
 
 ### Main Features
 - Randomize Attacks
 - Full Coverage of the mentioned attacks
 - you need run the script in DC with Active Directory installed 
-- Some of attacks require client workstation
   
-### Supported Attacks
+### Supported Attacks (Less vulnerabilities)
 - Abusing ACLs/ACEs
-- Kerberoasting
 - AS-REP Roasting
 - Abuse DnsAdmins
 - Password in Object Description
 - User Objects With Default password (Changeme123!)
 - Password Spraying
 - DCSync
-- Silver Ticket
-- Golden Ticket 
-- Pass-the-Hash
-- Pass-the-Ticket
 - SMB Signing Disabled
 
 ### Example
@@ -36,7 +30,3 @@ Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "C:\\Windows\\NTDS"
 IEX((new-object net.webclient).downloadstring("https://raw.githubusercontent.com/wazehell/vulnerable-AD/master/vulnad.ps1"));
 Invoke-VulnAD -UsersLimit 100 -DomainName "cs.org"
 ```
-
-### TODO
-- Play with workstations !
-- Click close issue button on github
