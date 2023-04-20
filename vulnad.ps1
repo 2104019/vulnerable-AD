@@ -124,20 +124,28 @@ function VulnAD-BadAcls {
     }
 }
 function VulnAD-Kerberoasting {
-    $selected_service = (VulnAD-GetRandom -InputList $Global:ServicesAccountsAndSPNs)
-    $svc = $selected_service.split(',')[0];
-    $spn = $selected_service.split(',')[1];
-    $password = VulnAD-GetRandom -InputList $Global:BadPasswords;
-    Write-Info "Kerberoasting $svc $spn"
-    Try { New-ADServiceAccount -Name $svc -ServicePrincipalNames "$svc/$spn.$Global:Domain" -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -RestrictToSingleComputer -PassThru } Catch {}
-    foreach ($sv in $Global:ServicesAccountsAndSPNs) {
-        if ($selected_service -ne $sv) {
-            $svc = $sv.split(',')[0];
-            $spn = $sv.split(',')[1];
-            Write-Info "Creating $svc services account"
-            $password = ([System.Web.Security.Membership]::GeneratePassword(12,2))
-            Try { New-ADServiceAccount -Name $svc -ServicePrincipalNames "$svc/$spn.$Global:Domain" -RestrictToSingleComputer -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -PassThru } Catch {}
+    function CreateServiceAccount ($svc, $spn, $password) {
+        $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+        try {
+            New-ADServiceAccount -Name $svc -ServicePrincipalNames "$svc/$spn.$Global:Domain" -RestrictToSingleComputer -AccountPassword $securePassword -PassThru
+        } catch {
+            Write-Warning "Failed to create service account: $svc"
+        }
+    }
 
+    $selectedService = VulnAD-GetRandom -InputList $Global:ServicesAccountsAndSPNs
+    $svc, $spn = $selectedService -split ',', 2
+    $password = VulnAD-GetRandom -InputList $Global:BadPasswords
+
+    Write-Info "Kerberoasting $svc $spn"
+    CreateServiceAccount $svc $spn $password
+
+    foreach ($sv in $Global:ServicesAccountsAndSPNs) {
+        if ($selectedService -ne $sv) {
+            $svc, $spn = $sv -split ',', 2
+            Write-Info "Creating $svc services account"
+            $password = [System.Web.Security.Membership]::GeneratePassword(12, 2)
+            CreateServiceAccount $svc $spn $password
         }
     }
 }
